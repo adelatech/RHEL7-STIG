@@ -16,10 +16,20 @@
 - name: make grub2 config
   command: grub2-mkconfig --output=/etc/grub2.cfg
 
-- name: "restart {{ rhel7stig_time_service }}"
+#- name: "restart {{ rhel7stig_time_service }}"
+#  service:
+#      name: "{{ rhel7stig_time_service }}"
+#      state: restarted
+
+- name: restart ntpd
   service:
-      name: "{{ rhel7stig_time_service }}"
-      state: restarted
+    name: ntpd
+    state: restarted
+
+- name: restart chronyd
+  service:
+    name: chronyd
+    state: restarted
 
 - name: init aide
   command: /usr/sbin/aide --init -B 'database_out=file:/var/lib/aide/aide.db.gz'
