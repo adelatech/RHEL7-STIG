@@ -3,6 +3,25 @@ rhel7stig_cat1_patch: yes
 rhel7stig_cat2_patch: yes
 rhel7stig_cat3_patch: yes
 
+# We've defined complexity-high to mean that we cannot automatically remediate
+# the rule in question.  In the future this might mean that the remediation
+# may fail in some cases.
+rhel7stig_complexity_high: no
+
+# Show "changed" for complex items not remediated per complexity-high setting
+# to make them stand out.  "changed" items on a second run of the role would
+# indicate items requiring manual review.
+rhel7stig_audit_complex: yes
+
+# We've defined disruption-high to indicate items that are likely to cause
+# disruption in a normal workflow.  These items can be remediated automatically
+# but are disabled by default to avoid disruption.
+rhel7stig_disruption_high: no
+
+# Show "changed" for disruptive items not remediated per disruption-high
+# setting to make them stand out.
+rhel7stig_audit_disruptive: yes
+
 rhel7stig_skip_for_travis: false
 
 rhel7stig_workaround_for_disa_benchmark: true
@@ -25,12 +44,12 @@ rhel_07_020010: true
 rhel_07_020050: true
 rhel_07_020060: true
 # This check breaks with redhat.com repos as they do not sign repo data
-rhel_07_020070: false
+rhel_07_020070: "{{ ansible_distribution == 'CentOS' }}"
 rhel_07_020210: true
 rhel_07_020220: true
 rhel_07_020230: true
 # Not an automated task
-rhel_07_020250: false
+rhel_07_020250: true
 rhel_07_020310: true
 rhel_07_021350: true
 rhel_07_021710: true
@@ -263,6 +282,14 @@ rhel_07_040600: true
 # Whether or not to run tasks related to auditing/patching the desktop environment
 rhel7stig_gui: no
 
+# RHEL-07-020250
+# This is a check for a "supported release"
+# These are the minimum supported releases.
+# (Red Hat has support for older versions if you pay extra for it.)
+rhel7stig_min_supported_os_ver:
+    RedHat: "7.5"
+    CentOS: "7.4.1708"
+
 # RHEL-07-040740
 # If system is not router, run tasks that disable router functions.
 rhel7stig_system_is_router: no
@@ -327,7 +354,7 @@ rhel7stig_kdump_required: false
 # Set the SNMP community string to this from the default of public or private
 rhel7stig_snmp_community: Endgam3Ladyb0g
 
-# RHEL-07-010460 and RHEL-07-010470
+# RHEL-07-010480 and RHEL-07-010490
 # Password protect the boot loader
 rhel7stig_bootloader_password: 'Boot1tUp!'
 rhel7stig_boot_superuser: root

@@ -7,7 +7,6 @@
         check_mode: no
         failed_when: no
         changed_when: no
-        ignore_errors: yes
         register: rhel_07_010010_audit
 
       - name: "HIGH | RHEL-07-010010 | PATCH | The file permissions, ownership, and group membership of system files and commands must match the vendor values."
@@ -26,7 +25,6 @@
         check_mode: no
         failed_when: no
         changed_when: no
-        ignore_errors: yes
         register: rhel_07_010020_audit
 
       - name: "HIGH | RHEL-07-010020 | PATCH | The cryptographic hash of system files and commands must match vendor values."
@@ -125,7 +123,7 @@
 - name: "HIGH | RHEL-07-020050 | PATCH | The operating system must prevent the installation of software, patches, service packs, device drivers, or operating system components from a repository without verification they have been digitally signed using a certificate that is issued by a Certificate Authority (CA) that is recognized and approved by the organization."
   lineinfile:
       dest: /etc/yum.conf
-      regexp: gpgcheck
+      regexp: ^gpgcheck
       line: gpgcheck=1
       insertafter: '\[main\]'
   when: rhel_07_020050
@@ -136,7 +134,7 @@
 - name: "HIGH | RHEL-07-020060 | PATCH | The operating system must prevent the installation of software, patches, service packs, device drivers, or operating system components of local packages without verification they have been digitally signed using a certificate that is issued by a Certificate Authority (CA) that is recognized and approved by the organization."
   lineinfile:
       dest: /etc/yum.conf
-      regexp: localpkg_gpgcheck
+      regexp: ^localpkg_gpgcheck
       line: localpkg_gpgcheck=1
       insertafter: '\[main\]'
   when: rhel_07_020060
@@ -147,12 +145,16 @@
 - name: "HIGH | RHEL-07-020070 | PATCH | The operating system must prevent the installation of software, patches, service packs, device drivers, or operating system components of packages without verification of the repository metadata."
   lineinfile:
       dest: /etc/yum.conf
-      regexp: repo_gpgcheck
+      regexp: ^repo_gpgcheck
       line: repo_gpgcheck=1
       insertafter: '\[main\]'
-  when: rhel_07_020070
+  check_mode: "{{ rhel7stig_disruptive_check_mode }}"
+  when:
+      - rhel_07_020070
+      - rhel7stig_disruptive
   tags:
       - RHEL-07-020070
+      - disruption-high
       - yum
 
 - name: |
@@ -182,6 +184,18 @@
 
 # RHEL-07-020250 | PATCH | The operating system must be a supported release."
 # Not automated since current end of life for RHEL 7 is 2024-06-30
+- name: "HIGH | RHEL-07-020250 | PATCH | The operating system must be a vendor supported release."
+  debug:
+      msg: Minimum supported version of {{ ansible_distribution }} is {{ rhel7stig_min_supported_os_ver[ansible_distribution] }}
+  changed_when:
+      - rhel7stig_audit_complex
+      - ansible_distribution_version is not version_compare(rhel7stig_min_supported_os_ver[ansible_distribution], '>=')
+  when:
+      - rhel_07_020250
+      - rhel7stig_complex
+  tags:
+      - RHEL-07-020250
+      - complexity-high
 
 - block:
       # Currently just locks user account
@@ -190,7 +204,6 @@
         check_mode: no
         changed_when: no
         failed_when: no
-        ignore_errors: yes
         register: rhel_07_020310_audit
 
       - name: "HIGH | RHEL-07-020310 | PATCH | The root account must be the only account having unrestricted access to the system"
@@ -446,7 +459,6 @@
         check_mode: no
         failed_when: no
         changed_when: no
-        ignore_errors: yes
         with_items:
             - public
             - private
